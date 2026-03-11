@@ -1,5 +1,5 @@
 """
-TEMPORARY MOCK FILE
+TEMPORARY MOCK FILE 
 This module was created manually to satisfy dependencies for the 'mock_aurora_vehicle_node.py' 
 as the original 'canbridge' package was missing from the initial assignment files.
 Constants and IDs are mapped based on the provided PDF protocol documentation.
