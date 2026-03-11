@@ -1,7 +1,18 @@
+# ROS 2 Build Artifacts
 build/
 install/
 log/
-.vscode/
-*.pyc
+
+# Python cache and metadata
 __pycache__/
+*.pyc
+*.egg-info/
+
+# Testing
+.pytest_cache/
+
+# IDE settings
+.vscode/
+
+# Local environment variables
 .env
