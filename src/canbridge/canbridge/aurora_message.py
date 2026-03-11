@@ -13,11 +13,11 @@ class AuroraCANIDs:
     COMMAND = 0x49
     HEARTBEAT = 0x41
     STEERING_FEEDBACK = 0x31
-    VEHICLE_LIGHT_STATUS = 0x37  # זה מה שהיה חסר!
+    VEHICLE_LIGHT_STATUS = 0x37 
     HANDBRAKE_STATUS = 0x38
     VEHICLE_STATUS = 0x39
     BMS_BATTERY_STATUS = 0x18904010
-    ROCU1_STATUS = 0x51 # הוספתי ליתר ביטחון למניעת קריסה הבאה
+    ROCU1_STATUS = 0x51
 
 class AuroraCANCommand:
     """Command codes (Byte 1)"""
@@ -31,8 +31,8 @@ class AuroraCANCommand:
     HANDBRAKE_DISENGAGE = 0x1D
     SPEED_MODE_LOW = 0x1B
     SPEED_MODE_HIGH = 0x1C
-    REGULAR_LIGHTS = 0x20 # הערכה לבינתיים
-    HIGH_LIGHTS = 0x21    # הערכה לבינתיים
+    REGULAR_LIGHTS = 0x20 
+    HIGH_LIGHTS = 0x21    
 
 class AuroraGear(Enum):
     DRIVE = 0x01
