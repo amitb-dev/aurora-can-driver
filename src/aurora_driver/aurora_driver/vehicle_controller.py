@@ -30,6 +30,15 @@ class VehicleController(Node):
         # Schedule gear change to Drive after 2 seconds to allow engine startup
         self.create_timer(2.0, self.send_gear_drive)
 
+        # Target value for gas/brake (Step 7: -300 for gas)
+        self.target_gas_brake = -300
+        self.current_speed = 0.0
+
+        # Step 8 & 9: After 7s (2s startup + 5s driving), start braking
+        self.create_timer(7.0, self.start_braking)
+        # Step 10: After 9s (7s + 2s braking), shutdown
+        self.create_timer(9.0, self.stop_and_shutdown)
+
     def release_handbrake(self):
         # Prepare 8-byte command for HANDBRAKE_DISENGAGE
         data = [0x00] * 8
@@ -65,28 +74,16 @@ class VehicleController(Node):
             self.get_logger().error(f'Failed to send ignition command: {e}')
 
     def publish_heartbeat(self):
-        # Step 7: Send heartbeat with throttle to move the vehicle
         data = [0x00] * 8
         
-        # -300 for acceleration (negative = gas, positive = brake)
-        throttle_value = -300
+        # Use target_gas_brake instead of hardcoded value
+        throttle_bytes = self.target_gas_brake.to_bytes(2, byteorder='big', signed=True)
         
-        # Packing as 16-bit signed integer, big-endian
-        throttle_bytes = throttle_value.to_bytes(2, byteorder='big', signed=True)
-        
-        # Byte 1 & 2: gas_brake
         data[1] = throttle_bytes[0]
         data[2] = throttle_bytes[1]
-        
-        # Byte 7: estop (0x00 = normal)
-        data[7] = 0x00
+        data[7] = 0x00 
 
-        msg = can.Message(
-            arbitration_id=AuroraCANIDs.HEARTBEAT,
-            data=data,
-            is_extended_id=False
-        )
-
+        msg = can.Message(arbitration_id=AuroraCANIDs.HEARTBEAT, data=data, is_extended_id=False)
         try:
             self.bus.send(msg)
         except can.CanError:
@@ -110,20 +107,47 @@ class VehicleController(Node):
         except can.CanError as e:
             self.get_logger().error(f'Failed to send gear command: {e}')
 
+    def start_braking(self):
+        # Step 8: Log current speed from feedback
+        self.get_logger().info(f'Step 8: 5 seconds of driving reached. Current speed: {self.current_speed} km/h')
+        
+        # Step 9: Apply brake (+500) for 2 seconds
+        self.target_gas_brake = 500
+        self.get_logger().info('Step 9: Applying brakes (+500)')
+
+    def stop_and_shutdown(self):
+        # Step 10: Engage handbrake and turn engine off
+        self.get_logger().info('Step 10: Stopping - Engaging handbrake and ENGINE_OFF')
+        
+        # Send Handbrake Engage
+        hb_msg = can.Message(arbitration_id=AuroraCANIDs.COMMAND, data=[0x00, AuroraCANCommand.HANDBRAKE_ENGAGE] + [0]*6, is_extended_id=False)
+        self.bus.send(hb_msg)
+        
+        # Send Engine Off
+        off_msg = can.Message(arbitration_id=AuroraCANIDs.COMMAND, data=[0x00, AuroraCANCommand.ENGINE_OFF] + [0]*6, is_extended_id=False)
+        self.bus.send(off_msg)
+
     def can_receive_callback(self):
         """
-        Check for new CAN messages without blocking the node.
+        Non-blocking check for incoming CAN messages.
+        Processes BMS and Vehicle Status messages based on the protocol.
         """
-        msg = self.bus.recv(timeout=0) # timeout=0 means "don't wait, just check and return"
+        msg = self.bus.recv(timeout=0)
         
         if msg is not None:
-            # Check if this is the Battery Status message (BMS)
+            # Process Battery Status (BMS)
             if msg.arbitration_id == AuroraCANIDs.BMS_BATTERY_STATUS:
-                # Based on protocol: Byte 6-7 (last 2 bytes) are SOC * 10
-                # Let's start simple: just log that we got it
+                # Byte 6-7: State of Charge (SOC) scaled by 10
                 soc_raw = int.from_bytes(msg.data[6:8], byteorder="big")
                 soc_percent = soc_raw / 10.0
                 self.get_logger().info(f'BMS Update: Battery is at {soc_percent}%')
+
+            # Process Vehicle Status for speed feedback (Step 8)
+            elif msg.arbitration_id == AuroraCANIDs.VEHICLE_STATUS:
+                # Byte 0-1: Vehicle speed (int16, big-endian)
+                # Scaling factor applied as per protocol documentation
+                speed_raw = int.from_bytes(msg.data[0:2], byteorder="big", signed=True)
+                self.current_speed = speed_raw / 10.0
 
 def main(args=None):
     rclpy.init(args=args)
