@@ -1,0 +1,43 @@
+AURORA DRIVER - FINAL SIMULATION LOG
+------------------------------------
+
+[python3-1] [INFO] [1773411273.343378506] [mock_aurora_vehicle]: Mock vehicle connected to vcan0 (socketcan)
+[vehicle_controller-2] [INFO] [1773411273.351889490] [vehicle_controller]: Connected to CAN bus: vcan0
+[vehicle_controller-2] [INFO] [1773411273.352295602] [vehicle_controller]: Vehicle Controller Node is now listening...
+[vehicle_controller-2] [INFO] [1773411273.352621479] [vehicle_controller]: Handbrake release command sent
+[vehicle_controller-2] [INFO] [1773411273.352916844] [vehicle_controller]: Ignition ON command sent
+[python3-1] [INFO] [1773411273.355404405] [mock_aurora_vehicle]: Mock Aurora vehicle ready
+[python3-1] [ERROR] [1773411273.356079491] [mock_aurora_vehicle]: Error sending status: 'MockAuroraVehicle' object has no attribute 'rocu1_connected'
+[python3-1] [INFO] [1773411273.356776991] [mock_aurora_vehicle]: 🅿️  Handbrake released
+[python3-1] [INFO] [1773411273.357096098] [mock_aurora_vehicle]: 🔥 Ignition on - Engine starting
+[vehicle_controller-2] [INFO] [1773411273.402959631] [vehicle_controller]: BMS Update: Battery is at 84.9%
+[python3-1] [INFO] [1773411273.404037483] [mock_aurora_vehicle]: Received control: gas_brake=-300, steering=0, estop=False
+[vehicle_controller-2] [INFO] [1773411273.452901500] [vehicle_controller]: BMS Update: Battery is at 84.9%
+[python3-1] [INFO] [1773411274.357842390] [mock_aurora_vehicle]: ✅ Engine running
+[vehicle_controller-2] [INFO] [1773411274.403078738] [vehicle_controller]: BMS Update: Battery is at 84.9%
+[python3-1] [INFO] [1773411274.404090714] [mock_aurora_vehicle]: Received control: gas_brake=-300, steering=0, estop=False
+[vehicle_controller-2] [INFO] [1773411274.452844999] [vehicle_controller]: BMS Update: Battery is at 84.9%
+[vehicle_controller-2] [INFO] [1773411275.353813154] [vehicle_controller]: Gear shifted to DRIVE
+[python3-1] [INFO] [1773411275.354230220] [mock_aurora_vehicle]: ⚙️  Gear: DRIVE
+[vehicle_controller-2] [INFO] [1773411275.402951052] [vehicle_controller]: BMS Update: Battery is at 84.9%
+[python3-1] [INFO] [1773411275.453940740] [mock_aurora_vehicle]: Received control: gas_brake=-300, steering=0, estop=False
+[vehicle_controller-2] [INFO] [1773411275.503068034] [vehicle_controller]: BMS Update: Battery is at 84.9%
+[python3-1] [INFO] [1773411276.503970684] [mock_aurora_vehicle]: Received control: gas_brake=-300, steering=0, estop=False
+[vehicle_controller-2] [INFO] [1773411276.552756660] [vehicle_controller]: BMS Update: Battery is at 84.9%
+[vehicle_controller-2] [INFO] [1773411277.354197355] [vehicle_controller]: Gear shifted to DRIVE
+[python3-1] [INFO] [1773411277.355073519] [mock_aurora_vehicle]: ⚙️  Gear: DRIVE
+[python3-1] [INFO] [1773411277.504594381] [mock_aurora_vehicle]: Received control: gas_brake=-300, steering=0, estop=False
+[vehicle_controller-2] [INFO] [1773411279.353697361] [vehicle_controller]: Gear shifted to DRIVE
+[python3-1] [INFO] [1773411279.354703863] [mock_aurora_vehicle]: ⚙️  Gear: DRIVE
+[python3-1] [INFO] [1773411279.554999039] [mock_aurora_vehicle]: Received control: gas_brake=-300, steering=0, estop=False
+[vehicle_controller-2] [INFO] [1773411280.354563473] [vehicle_controller]: Step 8: 5 seconds of driving reached. Current speed: -1638.3 km/h
+[vehicle_controller-2] [INFO] [1773411280.355616520] [vehicle_controller]: Step 9: Applying brakes (+500)
+[python3-1] [INFO] [1773411280.604616138] [mock_aurora_vehicle]: Received control: gas_brake=500, steering=0, estop=False
+[vehicle_controller-2] [INFO] [1773411281.314091405] [vehicle_controller]: BMS Update: Battery is at 84.9%
+[vehicle_controller-2] [INFO] [1773411281.353662512] [vehicle_controller]: Gear shifted to DRIVE
+[python3-1] [INFO] [1773411281.354444224] [mock_aurora_vehicle]: ⚙️  Gear: DRIVE
+[python3-1] [INFO] [1773411281.605238474] [mock_aurora_vehicle]: Received control: gas_brake=500, steering=0, estop=False
+[vehicle_controller-2] [INFO] [1773411281.683173805] [vehicle_controller]: BMS Update: Battery is at 84.9%
+[vehicle_controller-2] [INFO] [1773411282.354284457] [vehicle_controller]: Step 10: Stopping - Engaging handbrake and ENGINE_OFF
+[python3-1] [INFO] [1773411282.355820180] [mock_aurora_vehicle]: 🅿️  Handbrake engaged
+[python3-1] [INFO] [1773411282.356831898] [mock_aurora_vehicle]: 🔴 Engine off

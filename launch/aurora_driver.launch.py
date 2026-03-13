@@ -10,7 +10,7 @@ def generate_launch_description():
     return LaunchDescription([
         # 1. Start the mock vehicle script using python3
         ExecuteProcess(
-            cmd=['python3', 'src/mock_aurora_vehicle_node.py'],
+            cmd=['python3', 'mock_aurora_vehicle_node.py'],
             output='screen'
         ),
 
