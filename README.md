@@ -36,10 +36,20 @@ source install/setup.bash
 ```
 
 ## 3. Launching the System
-The provided launch file starts both the **Mock Vehicle Simulation** and the **Vehicle Controller Node** in a single command:
 ```bash
+# Basic launch (defaults: 5s duration, -300 throttle)
 ros2 launch aurora_driver aurora_driver.launch.py
+
+# Launch with custom mission parameters
+ros2 launch aurora_driver aurora_driver.launch.py drive_duration_sec:=3.0 drive_throttle:=-400
 ```
+
+## Key Features & Professional Implementation
+- **Robust Hardware Synchronization:** Implements an adaptive startup retry-loop. The driver monitors vehicle feedback and retries initialization until the simulation is ready, preventing race conditions.
+- **Dynamic Mission Control:** Uses ROS 2 parameters for throttle and duration, allowing mission adjustments without code changes.
+- **Real-time Telemetry:** Active parsing of Battery SOC (Extended CAN ID `0x18904010`) and vehicle velocity feedback.
+- **Safety Fallback:** Integrated exception handling that triggers a heartbeat with **ESTOP active** (Byte 7) upon CAN interface failure.
+- **Resource Management:** Ensures clean shutdown by canceling all ROS timers and securing the vehicle state on exit.
 
 ## 4. Expected Output & Sequence
 The driver follows the automated sequence required by section 5.1 of the protocol:
@@ -48,11 +58,11 @@ The driver follows the automated sequence required by section 5.1 of the protoco
 
 2. **Shift:** Waits for engine feedback and shifts gear to DRIVE.
 
-3. **Drive:** Accelerates (Heartbeat with -300 throttle) for 5 seconds.
+3. **Drive:** Accelerates based on configurable throttle parameters.
 
 4. **Log:** Captures and logs vehicle speed and SOC from CAN messages.
 
-5. **Brake:** Applies brakes (+500 throttle) for 2 seconds.
+5. **Brake:** Applies brakes for a fixed safety duration.
 
 6. **Shutdown:** Re-engages handbrake and turns the engine off.
 

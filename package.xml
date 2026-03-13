@@ -3,10 +3,9 @@
 <package format="3">
   <name>aurora_driver</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
+  <description>ROS2 driver package for Aurora vehicle CAN-bus control and monitoring</description>
   <maintainer email="bamit127@gmail.com">amit</maintainer>
-  <license>TODO: License declaration</license>
-
+  <license>Apache-2.0</license>
   <depend>rclpy</depend>
   <depend>std_msgs</depend>
 
