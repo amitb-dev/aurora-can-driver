@@ -26,6 +26,9 @@ class VehicleController(Node):
         # Send ignition command to start the engine
         self.send_ignition_on()
 
+        # Schedule gear change to Drive after 2 seconds to allow engine startup
+        self.create_timer(2.0, self.send_gear_drive)
+
     def send_ignition_on(self):
         # Prepare 8-byte command message
         data = [0x00] * 8
@@ -44,10 +47,10 @@ class VehicleController(Node):
             self.get_logger().error(f'Failed to send ignition command: {e}')
 
     def publish_heartbeat(self):
-        # Construct 8-byte heartbeat message
-        # Byte 1-2: gas_brake (int16, big-endian)
+        # Co 1-2: gas_brake (int16, big-endian)
         # Byte 3-4: steering (int16, big-endian)
-        # Byte 7: estop (0x00 for normal operation)
+        # Byte 7: estop (0x00 for normal operation)nstruct 8-byte heartbeat message
+        # Byte
         data = [0x00] * 8
         
         # For now, we send 0 for all controls to keep the vehicle in standby
@@ -64,6 +67,24 @@ class VehicleController(Node):
             self.bus.send(msg)
         except can.CanError:
             self.get_logger().error('Failed to send heartbeat')
+
+    def send_gear_drive(self):
+        # Prepare 8-byte command for GEAR_DRIVE
+        data = [0x00] * 8
+        data[1] = AuroraCANCommand.GEAR_DRIVE
+        
+        msg = can.Message(
+            arbitration_id=AuroraCANIDs.COMMAND,
+            data=data,
+            is_extended_id=False
+        )
+        
+        try:
+            self.bus.send(msg)
+            self.get_logger().info('Gear shifted to DRIVE')
+
+        except can.CanError as e:
+            self.get_logger().error(f'Failed to send gear command: {e}')
 
     def can_receive_callback(self):
         """
