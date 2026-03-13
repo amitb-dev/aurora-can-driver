@@ -16,9 +16,10 @@ class VehicleController(Node):
             self.get_logger().error(f'Failed to connect to CAN: {str(e)}')
             return
 
+        self.get_logger().info('Vehicle Controller Node is now listening...')
+
         # 2. Create a timer that runs every 0.01 seconds (100Hz) to check for messages
         self.create_timer(0.01, self.can_receive_callback)
-        self.get_logger().info('Vehicle Controller Node is now listening...')
 
         # 3. Heartbeat timer: runs at 20Hz (0.05s) to keep the vehicle active
         self.create_timer(0.05, self.publish_heartbeat)
@@ -135,8 +136,8 @@ class VehicleController(Node):
         msg = self.bus.recv(timeout=0)
         
         if msg is not None:
-            # Process Battery Status (BMS)
-            if msg.arbitration_id == AuroraCANIDs.BMS_BATTERY_STATUS:
+            # Bonus 1: Process Battery Status (BMS) with Extended ID 0x18904010
+            if msg.arbitration_id == 0x18904010:
                 # Byte 6-7: State of Charge (SOC) scaled by 10
                 soc_raw = int.from_bytes(msg.data[6:8], byteorder="big")
                 soc_percent = soc_raw / 10.0
@@ -145,7 +146,6 @@ class VehicleController(Node):
             # Process Vehicle Status for speed feedback (Step 8)
             elif msg.arbitration_id == AuroraCANIDs.VEHICLE_STATUS:
                 # Byte 0-1: Vehicle speed (int16, big-endian)
-                # Scaling factor applied as per protocol documentation
                 speed_raw = int.from_bytes(msg.data[0:2], byteorder="big", signed=True)
                 self.current_speed = speed_raw / 10.0
 
