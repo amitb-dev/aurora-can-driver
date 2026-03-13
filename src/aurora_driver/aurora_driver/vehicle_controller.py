@@ -2,7 +2,7 @@ import rclpy
 from rclpy.node import Node
 import can
 # Importing the constants we created earlier
-from canbridge.aurora_message import AuroraCANIDs
+from canbridge.aurora_message import AuroraCANIDs, AuroraCANCommand
 
 class VehicleController(Node):
     def __init__(self):
@@ -19,6 +19,26 @@ class VehicleController(Node):
         # 2. Create a timer that runs every 0.01 seconds (100Hz) to check for messages
         self.create_timer(0.01, self.can_receive_callback)
         self.get_logger().info('Vehicle Controller Node is now listening...')
+
+        # Send ignition command to start the engine
+        self.send_ignition_on()
+
+    def send_ignition_on(self):
+        # Prepare 8-byte command message
+        data = [0x00] * 8
+        data[1] = AuroraCANCommand.ENGINE_IGNITION_ON # ENGINE_IGNITION_ON code
+        
+        msg = can.Message(
+            arbitration_id=AuroraCANIDs.COMMAND,
+            data=data,
+            is_extended_id=False
+        )
+        
+        try:
+            self.bus.send(msg)
+            self.get_logger().info('Ignition ON command sent')
+        except can.CanError as e:
+            self.get_logger().error(f'Failed to send ignition command: {e}')
 
     def can_receive_callback(self):
         """
