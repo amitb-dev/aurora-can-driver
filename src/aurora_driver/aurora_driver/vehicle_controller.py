@@ -23,11 +23,29 @@ class VehicleController(Node):
         # 3. Heartbeat timer: runs at 20Hz (0.05s) to keep the vehicle active
         self.create_timer(0.05, self.publish_heartbeat)
 
-        # Send ignition command to start the engine
+        # Startup Sequence: Step 1 (Handbrake) and Step 2 (Ignition)
+        self.release_handbrake()
         self.send_ignition_on()
 
         # Schedule gear change to Drive after 2 seconds to allow engine startup
         self.create_timer(2.0, self.send_gear_drive)
+
+    def release_handbrake(self):
+        # Prepare 8-byte command for HANDBRAKE_DISENGAGE
+        data = [0x00] * 8
+        data[1] = AuroraCANCommand.HANDBRAKE_DISENGAGE
+        
+        msg = can.Message(
+            arbitration_id=AuroraCANIDs.COMMAND,
+            data=data,
+            is_extended_id=False
+        )
+        
+        try:
+            self.bus.send(msg)
+            self.get_logger().info('Handbrake release command sent')
+        except can.CanError as e:
+            self.get_logger().error(f'Failed to release handbrake: {e}')
 
     def send_ignition_on(self):
         # Prepare 8-byte command message
