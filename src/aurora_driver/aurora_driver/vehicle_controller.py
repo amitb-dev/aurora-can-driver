@@ -20,6 +20,9 @@ class VehicleController(Node):
         self.create_timer(0.01, self.can_receive_callback)
         self.get_logger().info('Vehicle Controller Node is now listening...')
 
+        # 3. Heartbeat timer: runs at 20Hz (0.05s) to keep the vehicle active
+        self.create_timer(0.05, self.publish_heartbeat)
+
         # Send ignition command to start the engine
         self.send_ignition_on()
 
@@ -39,6 +42,28 @@ class VehicleController(Node):
             self.get_logger().info('Ignition ON command sent')
         except can.CanError as e:
             self.get_logger().error(f'Failed to send ignition command: {e}')
+
+    def publish_heartbeat(self):
+        # Construct 8-byte heartbeat message
+        # Byte 1-2: gas_brake (int16, big-endian)
+        # Byte 3-4: steering (int16, big-endian)
+        # Byte 7: estop (0x00 for normal operation)
+        data = [0x00] * 8
+        
+        # For now, we send 0 for all controls to keep the vehicle in standby
+        # Byte 1-2 (gas_brake) and 3-4 (steering) remain 0x00
+        data[7] = 0x00 # Normal operation (no e-stop)
+
+        msg = can.Message(
+            arbitration_id=AuroraCANIDs.HEARTBEAT,
+            data=data,
+            is_extended_id=False
+        )
+
+        try:
+            self.bus.send(msg)
+        except can.CanError:
+            self.get_logger().error('Failed to send heartbeat')
 
     def can_receive_callback(self):
         """
