@@ -65,15 +65,21 @@ class VehicleController(Node):
             self.get_logger().error(f'Failed to send ignition command: {e}')
 
     def publish_heartbeat(self):
-        # Co 1-2: gas_brake (int16, big-endian)
-        # Byte 3-4: steering (int16, big-endian)
-        # Byte 7: estop (0x00 for normal operation)nstruct 8-byte heartbeat message
-        # Byte
+        # Step 7: Send heartbeat with throttle to move the vehicle
         data = [0x00] * 8
         
-        # For now, we send 0 for all controls to keep the vehicle in standby
-        # Byte 1-2 (gas_brake) and 3-4 (steering) remain 0x00
-        data[7] = 0x00 # Normal operation (no e-stop)
+        # -300 for acceleration (negative = gas, positive = brake)
+        throttle_value = -300
+        
+        # Packing as 16-bit signed integer, big-endian
+        throttle_bytes = throttle_value.to_bytes(2, byteorder='big', signed=True)
+        
+        # Byte 1 & 2: gas_brake
+        data[1] = throttle_bytes[0]
+        data[2] = throttle_bytes[1]
+        
+        # Byte 7: estop (0x00 = normal)
+        data[7] = 0x00
 
         msg = can.Message(
             arbitration_id=AuroraCANIDs.HEARTBEAT,
