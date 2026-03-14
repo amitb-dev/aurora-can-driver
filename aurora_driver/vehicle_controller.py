@@ -31,6 +31,7 @@ class VehicleController(Node):
         self.engine_started = False
         self.handbrake_released = False
         self.bms_log_counter = 0 # counter to reduce BMS log spam
+        self.emergency_triggered = False
 
         # 1. Async CAN receiver loop
         self.timer_receive = self.create_timer(0.01, self.can_receive_callback)
@@ -113,7 +114,7 @@ class VehicleController(Node):
 
     def publish_heartbeat(self, estop_active=False):
         """
-        Sends a heartbeat message (ID 0x41) according to section 4.3.
+        Sends a heartbeat message (ID 0x41). Can also be used with estop_active=True.
         """
         # Initialize 8 bytes with 0x00
         data = [0x00] * 8
@@ -140,8 +141,8 @@ class VehicleController(Node):
         msg = can.Message(arbitration_id=0x41, data=data, is_extended_id=False)
         try:
             self.bus.send(msg)
-        except can.CanError:
-            self.get_logger().error('CAN Bus error: Failed to send heartbeat')
+        except can.CanError as e:
+            self.emergency_shutdown(f'Failed to send heartbeat: {e}')
 
     def send_gear_drive(self):
         # Prepare 8-byte command for GEAR_DRIVE
@@ -176,6 +177,9 @@ class VehicleController(Node):
         """
         Final mission stage. Secures the vehicle and stops all timers/interfaces.
         """
+        if self.bus is None:
+            return
+        
         self.get_logger().info('Mission sequence finalized. Initiating secure shutdown.')
         
         # Reset control value
@@ -240,7 +244,7 @@ class VehicleController(Node):
                     self.handbrake_released = (msg.data[1] == 0x00)
             
             except Exception as e:
-                self.get_logger().error(f'CAN error: {e}')
+                self.emergency_shutdown(f'CAN receive failure: {e}')
                 break
 
     def destroy_node(self):
@@ -265,6 +269,42 @@ class VehicleController(Node):
             pass
 
         super().destroy_node()
+
+    def emergency_shutdown(self, reason='Unknown error'):
+        """
+        Sends one ESTOP heartbeat and performs a controlled emergency shutdown.
+        """
+        if self.emergency_triggered:
+            return
+
+        self.emergency_triggered = True
+        self.get_logger().error(f'Emergency shutdown triggered: {reason}')
+
+        # Force neutral command
+        self.target_gas_brake = 0.0
+
+        # Try to send one ESTOP heartbeat before shutting down
+        try:
+            data = [0x00] * 8
+            throttle_bytes = int(0).to_bytes(2, byteorder='big', signed=True)
+            data[1] = throttle_bytes[0]
+            data[2] = throttle_bytes[1]
+            data[3] = 0x00
+            data[4] = 0x00
+            data[7] = 0x01  # ESTOP active
+
+            estop_msg = can.Message(
+                arbitration_id=AuroraCANIDs.HEARTBEAT,
+                data=data,
+                is_extended_id=False
+            )
+            self.bus.send(estop_msg)
+            self.get_logger().warn('ESTOP heartbeat sent')
+        except Exception as e:
+            self.get_logger().warn(f'Failed to send ESTOP heartbeat: {e}')
+
+        # Reuse normal shutdown flow
+        self.stop_and_shutdown()
 
 def main(args=None):
     rclpy.init(args=args)
