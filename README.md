@@ -1,18 +1,32 @@
 # Aurora Vehicle Driver - Home Assignment
 
-This ROS 2 package implements a professional driver for the Aurora vehicle, utilizing CAN communication over a virtual CAN interface (`vcan0`). The driver handles the full vehicle lifecycle: automated startup, heartbeat maintenance with throttle control, speed monitoring, and a safe shutdown sequence.
+This project implements a ROS 2 Python vehicle controller for the Aurora home assignment, using CAN communication over a virtual CAN interface (`vcan0`).
+
+The controller performs the requested mission flow:
+- release handbrake
+- send ignition command
+- wait for engine RPM feedback
+- shift to DRIVE
+- accelerate for a configurable duration
+- log vehicle status
+- apply braking
+- engage handbrake and shut the engine off
 
 ## Package Structure
-As per the requirements, the package follows the standard ROS 2 layout:
-- `aurora_driver/`: Python source code and node implementation.
-- `canbridge/`: CAN protocol constants and message definitions.
-- `launch/`: Launch files for simultaneous node execution.
-- `setup.py` & `package.xml`: Build and dependency configurations.
+- `aurora_driver/` – ROS 2 Python nodes
+- `launch/` – launch file for running the mock vehicle and controller together
+- `canbridge/` – minimal local compatibility layer created because the original assignment package was missing
+- `setup.py`, `setup.cfg`, `package.xml` – ROS 2 package configuration
 
 ## Prerequisites
-- **Operating System:** Ubuntu 22.04 (recommended)
-- **ROS 2 Version:** Humble or later
-- **Python Libraries:** `python-can`
+- Ubuntu 22.04
+- ROS 2 Humble
+- `python-can`
+
+Install `python-can` if needed:
+```bash
+pip3 install python-can
+```
 
 ## 1. Virtual CAN Setup
 Before running the nodes, ensure the `vcan0` interface is active:
@@ -22,8 +36,8 @@ sudo ip link add dev vcan0 type vcan
 sudo ip link set up vcan0
 ```
 
-## 2. Installation & Building
-To build the package, clone this repository into the src folder of your ROS 2 workspace:
+## 2. Build
+From the workspace root:
 ```bash
 # Navigate to workspace root
 cd ~/ros2_ws
@@ -35,35 +49,34 @@ colcon build --packages-select aurora_driver
 source install/setup.bash
 ```
 
-## 3. Launching the System
+## 3. Launch
 ```bash
-# Basic launch (defaults: 5s duration, -300 throttle)
+# Default run
 ros2 launch aurora_driver aurora_driver.launch.py
 
-# Launch with custom mission parameters
-ros2 launch aurora_driver aurora_driver.launch.py drive_duration_sec:=3.0 drive_throttle:=-400
+# Custom parameters
+ros2 launch aurora_driver aurora_driver.launch.py drive_duration_sec:=3.0 drive_throttle:=-300
 ```
 
-## Key Features & Professional Implementation
-- **Robust Hardware Synchronization:** Implements an adaptive startup retry-loop. The driver monitors vehicle feedback and retries initialization until the simulation is ready, preventing race conditions.
-- **Dynamic Mission Control:** Uses ROS 2 parameters for throttle and duration, allowing mission adjustments without code changes.
-- **Real-time Telemetry:** Active parsing of Battery SOC (Extended CAN ID `0x18904010`) and vehicle velocity feedback.
-- **Safety Fallback:** Integrated exception handling that triggers a heartbeat with **ESTOP active** (Byte 7) upon CAN interface failure.
-- **Resource Management:** Ensures clean shutdown by canceling all ROS timers and securing the vehicle state on exit.
+## Implemented Features
+* Startup retry loop until valid engine RPM and released handbrake are detected
+* 20 Hz heartbeat publishing over CAN
+* Configurable throttle and drive duration through ROS 2 parameters
+* Parsing of:
+    * vehicle speed
+    * engine RPM
+    * battery SOC
+* Controlled braking and shutdown sequence
+* Timer cleanup and CAN bus shutdown during exit
 
-## 4. Expected Output & Sequence
-The driver follows the automated sequence required by section 5.1 of the protocol:
+## Mission Sequence
+1. Release handbrake
+2. Send ignition command
+3. Wait until RPM feedback indicates the engine is running
+4. Shift to DRIVE
+5. Apply throttle for the configured duration
+6. Log speed and RPM
+7. Apply braking
+8. Engage handbrake and send engine-off command
 
-1. **Startup:** Disengages handbrake and sends ignition command.
-
-2. **Shift:** Waits for engine feedback and shifts gear to DRIVE.
-
-3. **Drive:** Accelerates based on configurable throttle parameters.
-
-4. **Log:** Captures and logs vehicle speed and SOC from CAN messages.
-
-5. **Brake:** Applies brakes for a fixed safety duration.
-
-6. **Shutdown:** Re-engages handbrake and turns the engine off.
-
-Check the simulation_log.txt file in this repository for a sample log of a successful run.
+A sample successful run is provided in `simulation_log.txt`.

@@ -26,51 +26,56 @@ class VehicleController(Node):
 
         # Internal State
         self.current_speed = 0.0
-        self.target_gas_brake = 0.0 # Neutral until engine is ready
+        self.current_rpm = 0
+        self.target_gas_brake = 0.0 
         self.engine_started = False
         self.handbrake_released = False
+        self.bms_log_counter = 0 # counter to reduce BMS log spam
 
-        # 1. Async CAN receiver loop (100Hz)
+        # 1. Async CAN receiver loop
         self.timer_receive = self.create_timer(0.01, self.can_receive_callback)
 
-        # 2. Heartbeat publisher (20Hz)
-        self.create_timer(0.05, self.publish_heartbeat)
+        # 2. Heartbeat publisher (assigned to variable for cleanup)
+        self.timer_heartbeat = self.create_timer(0.05, self.publish_heartbeat)
 
-        # 3. Startup Sequence Retry (1Hz) - This is the "Brain"
-        # It will call startup_sequence_retry every second until the vehicle responds
+        # 3. Startup Sequence Retry (1Hz)
         self.timer_startup = self.create_timer(1.0, self.startup_sequence_retry)
 
-        # 4. Mission timers (Initialize as None, will be created once vehicle is READY)
+        # 4. Mission timers handles (initialized as None)
         self.timer_drive = None
         self.timer_brake = None
         self.timer_shutdown = None
 
     def startup_sequence_retry(self):
         """
-        Periodically sends Ignition and Handbrake commands until the vehicle is ready.
+        Periodically sends Ignition and Handbrake commands until the vehicle is ready (RPM > 0).
         """
+        # If mission already started, do nothing
+        if self.timer_drive is not None:
+            return
+
         if not self.engine_started or not self.handbrake_released:
-            self.get_logger().info('Attempting to wake up vehicle...')
+            self.get_logger().info(f'Vehicle not ready (RPM: {self.current_rpm}, HB: {"Released" if self.handbrake_released else "Engaged"}). Retrying startup...')
             self.release_handbrake()
             self.send_ignition_on()
         else:
-            # Vehicle is ready! Stop retrying and start the drive sequence
-            self.get_logger().info('Vehicle is READY. Starting mission timers.')
+            self.get_logger().info('Vehicle is READY (RPM detected). Starting mission timers.')
             self.timer_startup.cancel()
             
-            # Start the 2s delay before shifting to DRIVE
+            # Mission Sequence:
+            # 1. Wait 2s before DRIVE
             self.timer_drive = self.create_timer(2.0, self.send_gear_drive)
             
-            # Schedule braking
+            # 2. Apply throttle
+            self.target_gas_brake = self.throttle_val
+
+            # 3. Schedule braking
             braking_start_time = 2.0 + self.duration_val
             self.timer_brake = self.create_timer(braking_start_time, self.start_braking)
             
-            # Schedule shutdown
+            # 4. Schedule final shutdown
             shutdown_time = braking_start_time + 2.0
             self.timer_shutdown = self.create_timer(shutdown_time, self.stop_and_shutdown)
-            
-            # Set drive throttle now that engine is starting
-            self.target_gas_brake = self.throttle_val
 
     def release_handbrake(self):
         # Prepare 8-byte command for HANDBRAKE_DISENGAGE
@@ -157,7 +162,11 @@ class VehicleController(Node):
             self.get_logger().error(f'Failed to send gear command: {e}')
 
     def start_braking(self):
-        self.get_logger().info(f'Target duration reached ({self.duration_val}s). Feedback velocity: {self.current_speed} km/h')        
+        # Log speed and RPM as required by the protocol
+        self.get_logger().info(
+            f'Target duration reached ({self.duration_val}s). '
+            f'Status: Speed={self.current_speed} km/h, RPM={self.current_rpm}'
+        )        
 
         # Apply service brake
         self.target_gas_brake = 500
@@ -165,26 +174,43 @@ class VehicleController(Node):
 
     def stop_and_shutdown(self):
         """
-        Final mission stage. Secures the vehicle and stops all timers.
+        Final mission stage. Secures the vehicle and stops all timers/interfaces.
         """
         self.get_logger().info('Mission sequence finalized. Initiating secure shutdown.')
         
+        # Reset control value
+        self.target_gas_brake = 0.0
+
         # Cancel all timers
-        self.timer_drive.cancel()
-        self.timer_brake.cancel()
-        self.timer_shutdown.cancel()
-        self.timer_receive.cancel()
+        timers_to_cancel = [
+            self.timer_drive, self.timer_brake, self.timer_shutdown,
+            self.timer_receive, self.timer_heartbeat, self.timer_startup
+        ]
         
-        # Secure vehicle state
-        hb_msg = can.Message(arbitration_id=AuroraCANIDs.COMMAND, 
-                             data=[0x00, AuroraCANCommand.HANDBRAKE_ENGAGE] + [0]*6, 
-                             is_extended_id=False)
-        self.bus.send(hb_msg)
+        for t in timers_to_cancel:
+            if t is not None:
+                try:
+                    t.cancel()
+                except Exception:
+                    pass
         
-        off_msg = can.Message(arbitration_id=AuroraCANIDs.COMMAND, 
-                              data=[0x00, AuroraCANCommand.ENGINE_OFF] + [0]*6, 
-                              is_extended_id=False)
-        self.bus.send(off_msg)
+        # Send final secure commands
+        try:
+            hb_msg = can.Message(arbitration_id=AuroraCANIDs.COMMAND, 
+                                 data=[0x00, AuroraCANCommand.HANDBRAKE_ENGAGE] + [0]*6, 
+                                 is_extended_id=False)
+            self.bus.send(hb_msg)
+            
+            off_msg = can.Message(arbitration_id=AuroraCANIDs.COMMAND, 
+                                  data=[0x00, AuroraCANCommand.ENGINE_OFF] + [0]*6, 
+                                  is_extended_id=False)
+            self.bus.send(off_msg)
+            
+            # Close the CAN bus interface immediately to prevent resource warnings
+            self.bus.shutdown()
+            self.bus = None # Mark as closed
+        except Exception as e:
+            self.get_logger().warn(f'Shutdown CAN communication failed: {e}')
 
         self.get_logger().info('Vehicle is secured. Shutdown sequence finished.')
 
@@ -194,26 +220,51 @@ class VehicleController(Node):
                 msg = self.bus.recv(timeout=0)
                 if msg is None: break
 
-                # Parse BMS
+                # Parse BMS with log throttling
                 if msg.arbitration_id == 0x18904010:
-                    soc_percent = int.from_bytes(msg.data[6:8], byteorder="big") / 10.0
-                    self.get_logger().info(f'BMS Update: Battery is at {soc_percent}%')
+                    self.bms_log_counter += 1
+                    if self.bms_log_counter % 100 == 0:
+                        soc_percent = int.from_bytes(msg.data[6:8], byteorder="big") / 10.0
+                        self.get_logger().info(f'BMS Update: Battery at {soc_percent}%')
 
                 # Parse Vehicle Status (ID 0x39)
                 elif msg.arbitration_id == AuroraCANIDs.VEHICLE_STATUS:
-                    # Check if engine is running (Byte 0, bit 7)
-                    self.engine_started = bool(msg.data[0] & (1 << 7))
-                    # Speed feedback (Byte 2)
+                    self.current_rpm = int.from_bytes(msg.data[3:5], byteorder="big", signed=False)
+                    
+                    # Spec requirement: Only consider engine started if RPM > 0
+                    self.engine_started = self.current_rpm > 0
                     self.current_speed = float(msg.data[2])
                 
                 # Parse Handbrake Status (ID 0x38)
                 elif msg.arbitration_id == AuroraCANIDs.HANDBRAKE_STATUS:
-                    # Byte 1 is 0x01 for engaged, 0x00 for released
                     self.handbrake_released = (msg.data[1] == 0x00)
             
             except Exception as e:
                 self.get_logger().error(f'CAN error: {e}')
                 break
+
+    def destroy_node(self):
+        """
+        Cleanup sequence: stop all timers and shutdown CAN bus.
+        """
+        # Cancel any remaining timers
+        timers = [self.timer_receive, self.timer_heartbeat, self.timer_startup, 
+                  self.timer_drive, self.timer_brake, self.timer_shutdown]
+        
+        for t in timers:
+            if t is not None:
+                try: t.cancel()
+                except Exception: pass
+
+        # Shutdown CAN interface only if it hasn't been shut down yet
+        try:
+            if self.bus is not None:
+                self.bus.shutdown()
+                self.bus = None
+        except Exception:
+            pass
+
+        super().destroy_node()
 
 def main(args=None):
     rclpy.init(args=args)
@@ -221,9 +272,9 @@ def main(args=None):
     try:
         rclpy.spin(node)
     except KeyboardInterrupt:
-        node.get_logger().info('Keyboard Interrupt received.')
+        # Silently exit on Ctrl+C to avoid ROS 2 context warnings
+        pass
     finally:
-        # Resource cleanup
         if rclpy.ok():
             node.destroy_node()
             rclpy.shutdown()
