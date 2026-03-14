@@ -44,6 +44,7 @@ class VehicleController(Node):
 
         # Mission timers handles (initialized as None)
         self.timer_drive = None
+        self.timer_throttle = None
         self.timer_brake = None
         self.timer_shutdown = None
 
@@ -66,14 +67,14 @@ class VehicleController(Node):
             # Mission Sequence:
             # 1. Wait 2s before DRIVE
             self.timer_drive = self.create_timer(2.0, self.send_gear_drive)
-            
-            # 2. Apply throttle
-            self.target_gas_brake = self.throttle_val
 
-            # 3. Schedule braking
-            braking_start_time = 2.0 + self.duration_val
+            # 2. Start throttle 0.5s after DRIVE
+            self.timer_throttle = self.create_timer(2.5, self.start_driving)
+
+            # 3. Schedule braking after configured drive duration
+            braking_start_time = 2.5 + self.duration_val
             self.timer_brake = self.create_timer(braking_start_time, self.start_braking)
-            
+
             # 4. Schedule final shutdown
             shutdown_time = braking_start_time + 2.0
             self.timer_shutdown = self.create_timer(shutdown_time, self.stop_and_shutdown)
@@ -161,6 +162,13 @@ class VehicleController(Node):
             self.timer_drive.cancel() # Stop the timer after first success
         except can.CanError as e:
             self.get_logger().error(f'Failed to send gear command: {e}')
+    
+    def start_driving(self):
+        self.target_gas_brake = self.throttle_val
+        self.get_logger().info(f'Starting acceleration with throttle {self.throttle_val}')
+
+        if self.timer_throttle is not None:
+            self.timer_throttle.cancel()
 
     def start_braking(self):
         # Log speed and RPM as required by the protocol
@@ -187,7 +195,7 @@ class VehicleController(Node):
 
         # Cancel all timers
         timers_to_cancel = [
-            self.timer_drive, self.timer_brake, self.timer_shutdown,
+            self.timer_drive, self.timer_throttle, self.timer_brake, self.timer_shutdown,
             self.timer_receive, self.timer_heartbeat, self.timer_startup
         ]
         
@@ -253,7 +261,7 @@ class VehicleController(Node):
         """
         # Cancel any remaining timers
         timers = [self.timer_receive, self.timer_heartbeat, self.timer_startup, 
-                  self.timer_drive, self.timer_brake, self.timer_shutdown]
+                  self.timer_drive, self.timer_throttle, self.timer_brake, self.timer_shutdown]
         
         for t in timers:
             if t is not None:

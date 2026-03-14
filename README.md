@@ -58,9 +58,9 @@ ros2 launch aurora_driver aurora_driver.launch.py drive_duration_sec:=3.0 drive_
 - 20 Hz heartbeat publishing over CAN
 - Configurable throttle and drive duration through ROS 2 parameters
 - Parsing of:
-    - vehicle speed
-    - engine RPM
-    - battery SOC
+  - vehicle speed
+  - engine RPM
+  - battery SOC
 - Controlled braking and shutdown sequence
 - Timer cleanup and CAN bus shutdown during exit
 
@@ -69,7 +69,7 @@ ros2 launch aurora_driver aurora_driver.launch.py drive_duration_sec:=3.0 drive_
 2. Send ignition command
 3. Wait until RPM feedback indicates the engine is running
 4. Shift to DRIVE
-5. Apply throttle for the configured duration
+5. Start throttle shortly after shifting to DRIVE
 6. Log speed and RPM
 7. Apply braking
 8. Engage handbrake and send engine-off command

@@ -4,49 +4,53 @@ Run command:
 ros2 launch aurora_driver aurora_driver.launch.py drive_duration_sec:=3.0 drive_throttle:=-300
 ==============================
 
-[INFO] [launch]: All log files can be found below /home/amit/.ros/log/2026-03-14-11-41-00-395036-aurora-698841
+[INFO] [launch]: All log files can be found below /home/amit/.ros/log/2026-03-14-13-09-23-400394-aurora-718651
 [INFO] [launch]: Default logging verbosity is set to INFO
-[INFO] [mock_vehicle-1]: process started with pid [698842]
-[INFO] [vehicle_controller-2]: process started with pid [698844]
-[mock_vehicle-1] [INFO] [1773481260.611447808] [mock_aurora_vehicle]: Mock vehicle connected to vcan0 (socketcan)
-[vehicle_controller-2] [INFO] [1773481260.612624708] [vehicle_controller]: Connected to CAN bus: vcan0
-[mock_vehicle-1] [INFO] [1773481260.613113155] [mock_aurora_vehicle]: Mock Aurora vehicle ready
-[vehicle_controller-2] [INFO] [1773481260.613218267] [vehicle_controller]: Vehicle Controller Node initialized with parameters.
-[mock_vehicle-1] [INFO] [1773481260.664815283] [mock_aurora_vehicle]: Received control: gas_brake=0, steering=0, estop=False
-[vehicle_controller-2] [INFO] [1773481261.615782773] [vehicle_controller]: Vehicle not ready (RPM: 0, HB: Engaged). Retrying startup...
-[vehicle_controller-2] [INFO] [1773481261.616774149] [vehicle_controller]: Handbrake release command sent
-[vehicle_controller-2] [INFO] [1773481261.617543819] [vehicle_controller]: Ignition ON command sent
-[mock_vehicle-1] [INFO] [1773481261.617553268] [mock_aurora_vehicle]: 🅿️  Handbrake released
-[mock_vehicle-1] [INFO] [1773481261.618162350] [mock_aurora_vehicle]: 🔥 Ignition on - Engine starting
-[mock_vehicle-1] [INFO] [1773481261.714433539] [mock_aurora_vehicle]: Received control: gas_brake=0, steering=0, estop=False
-[vehicle_controller-2] [INFO] [1773481262.614696504] [vehicle_controller]: Vehicle not ready (RPM: 0, HB: Released). Retrying startup...
-[mock_vehicle-1] [INFO] [1773481262.616171926] [mock_aurora_vehicle]: 🅿️  Handbrake released
-[vehicle_controller-2] [INFO] [1773481262.616186570] [vehicle_controller]: Handbrake release command sent
-[vehicle_controller-2] [INFO] [1773481262.617200544] [vehicle_controller]: Ignition ON command sent
-[mock_vehicle-1] [INFO] [1773481262.617247271] [mock_aurora_vehicle]: 🔥 Ignition on - Engine starting
-[mock_vehicle-1] [INFO] [1773481262.618999510] [mock_aurora_vehicle]: ✅ Engine running
-[vehicle_controller-2] [INFO] [1773481262.644407259] [vehicle_controller]: BMS Update: Battery at 84.9%
-[mock_vehicle-1] [INFO] [1773481262.764425917] [mock_aurora_vehicle]: Received control: gas_brake=0, steering=0, estop=False
-[vehicle_controller-2] [INFO] [1773481263.615640815] [vehicle_controller]: Vehicle is READY (RPM detected). Starting mission timers.
-[mock_vehicle-1] [INFO] [1773481263.618469242] [mock_aurora_vehicle]: ✅ Engine running
-[mock_vehicle-1] [INFO] [1773481263.765889764] [mock_aurora_vehicle]: Received control: gas_brake=-300, steering=0, estop=False
-[vehicle_controller-2] [INFO] [1773481264.705041280] [vehicle_controller]: BMS Update: Battery at 84.9%
-[mock_vehicle-1] [INFO] [1773481264.814807665] [mock_aurora_vehicle]: Received control: gas_brake=-300, steering=0, estop=False
-[vehicle_controller-2] [INFO] [1773481265.617292939] [vehicle_controller]: Gear shifted to DRIVE
-[mock_vehicle-1] [INFO] [1773481265.617305722] [mock_aurora_vehicle]: ⚙️  Gear: DRIVE
-[mock_vehicle-1] [INFO] [1773481265.816006370] [mock_aurora_vehicle]: Received control: gas_brake=-300, steering=0, estop=False
-[vehicle_controller-2] [INFO] [1773481266.765716264] [vehicle_controller]: BMS Update: Battery at 84.9%
-[mock_vehicle-1] [INFO] [1773481266.864267377] [mock_aurora_vehicle]: Received control: gas_brake=-300, steering=0, estop=False
-[mock_vehicle-1] [INFO] [1773481267.865673502] [mock_aurora_vehicle]: Received control: gas_brake=-300, steering=0, estop=False
-[vehicle_controller-2] [INFO] [1773481268.617062882] [vehicle_controller]: Target duration reached (3.0s). Status: Speed=25.0 km/h, RPM=1733
-[vehicle_controller-2] [INFO] [1773481268.617850965] [vehicle_controller]: Applying service brake (+500)
-[vehicle_controller-2] [INFO] [1773481268.815463273] [vehicle_controller]: BMS Update: Battery at 84.9%
-[mock_vehicle-1] [INFO] [1773481268.914147665] [mock_aurora_vehicle]: Received control: gas_brake=500, steering=0, estop=False
-[mock_vehicle-1] [INFO] [1773481269.915860646] [mock_aurora_vehicle]: Received control: gas_brake=500, steering=0, estop=False
-[vehicle_controller-2] [INFO] [1773481270.617134688] [vehicle_controller]: Mission sequence finalized. Initiating secure shutdown.
-[mock_vehicle-1] [INFO] [1773481270.618364622] [mock_aurora_vehicle]: 🅿️  Handbrake engaged
-[vehicle_controller-2] [INFO] [1773481270.618438955] [vehicle_controller]: Vehicle is secured. Shutdown sequence finished.
-[mock_vehicle-1] [INFO] [1773481270.618972170] [mock_aurora_vehicle]: 🔴 Engine off
+[INFO] [mock_vehicle-1]: process started with pid [718652]
+[INFO] [vehicle_controller-2]: process started with pid [718654]
+[mock_vehicle-1] [INFO] [1773486563.615324936] [mock_aurora_vehicle]: Mock vehicle connected to vcan0 (socketcan)
+[mock_vehicle-1] [INFO] [1773486563.617098608] [mock_aurora_vehicle]: Mock Aurora vehicle ready
+[vehicle_controller-2] [INFO] [1773486563.620463656] [vehicle_controller]: Connected to CAN bus: vcan0
+[vehicle_controller-2] [INFO] [1773486563.621103944] [vehicle_controller]: Vehicle Controller Node initialized with parameters.
+[mock_vehicle-1] [INFO] [1773486563.672782977] [mock_aurora_vehicle]: Received control: gas_brake=0, steering=0, estop=False
+[vehicle_controller-2] [INFO] [1773486564.622323447] [vehicle_controller]: Vehicle not ready (RPM: 0, HB: Engaged). Retrying startup...
+[vehicle_controller-2] [INFO] [1773486564.622853036] [vehicle_controller]: Handbrake release command sent
+[vehicle_controller-2] [INFO] [1773486564.623278313] [vehicle_controller]: Ignition ON command sent
+[mock_vehicle-1] [INFO] [1773486564.622894548] [mock_aurora_vehicle]: 🅿️  Handbrake released
+[mock_vehicle-1] [INFO] [1773486564.623309379] [mock_aurora_vehicle]: 🔥 Ignition on - Engine starting
+[mock_vehicle-1] [INFO] [1773486564.722429977] [mock_aurora_vehicle]: Received control: gas_brake=0, steering=0, estop=False
+[vehicle_controller-2] [INFO] [1773486565.622203300] [vehicle_controller]: Vehicle not ready (RPM: 0, HB: Released). Retrying startup...
+[vehicle_controller-2] [INFO] [1773486565.622657546] [vehicle_controller]: Handbrake release command sent
+[mock_vehicle-1] [INFO] [1773486565.622784172] [mock_aurora_vehicle]: 🅿️  Handbrake released
+[vehicle_controller-2] [INFO] [1773486565.622953882] [vehicle_controller]: Ignition ON command sent
+[mock_vehicle-1] [INFO] [1773486565.623108301] [mock_aurora_vehicle]: 🔥 Ignition on - Engine starting
+[mock_vehicle-1] [INFO] [1773486565.624015964] [mock_aurora_vehicle]: ✅ Engine running
+[vehicle_controller-2] [INFO] [1773486565.642128491] [vehicle_controller]: BMS Update: Battery at 84.9%
+[mock_vehicle-1] [INFO] [1773486565.722938587] [mock_aurora_vehicle]: Received control: gas_brake=0, steering=0, estop=False
+[vehicle_controller-2] [INFO] [1773486566.623552468] [vehicle_controller]: Vehicle is READY (RPM detected). Starting mission timers.
+[mock_vehicle-1] [INFO] [1773486566.624263361] [mock_aurora_vehicle]: ✅ Engine running
+[mock_vehicle-1] [INFO] [1773486566.772249731] [mock_aurora_vehicle]: Received control: gas_brake=0, steering=0, estop=False
+[vehicle_controller-2] [INFO] [1773486567.692907238] [vehicle_controller]: BMS Update: Battery at 84.9%
+[mock_vehicle-1] [INFO] [1773486567.772700523] [mock_aurora_vehicle]: Received control: gas_brake=0, steering=0, estop=False
+[vehicle_controller-2] [INFO] [1773486568.625261347] [vehicle_controller]: Gear shifted to DRIVE
+[mock_vehicle-1] [INFO] [1773486568.625432545] [mock_aurora_vehicle]: ⚙️  Gear: DRIVE
+[mock_vehicle-1] [INFO] [1773486568.773920675] [mock_aurora_vehicle]: Received control: gas_brake=0, steering=0, estop=False
+[vehicle_controller-2] [INFO] [1773486569.125012079] [vehicle_controller]: Starting acceleration with throttle -300
+[vehicle_controller-2] [INFO] [1773486569.742642231] [vehicle_controller]: BMS Update: Battery at 84.9%
+[mock_vehicle-1] [INFO] [1773486569.822622251] [mock_aurora_vehicle]: Received control: gas_brake=-300, steering=0, estop=False
+[mock_vehicle-1] [INFO] [1773486570.872749418] [mock_aurora_vehicle]: Received control: gas_brake=-300, steering=0, estop=False
+[vehicle_controller-2] [INFO] [1773486571.793007685] [vehicle_controller]: BMS Update: Battery at 84.9%
+[mock_vehicle-1] [INFO] [1773486571.922698880] [mock_aurora_vehicle]: Received control: gas_brake=-300, steering=0, estop=False
+[vehicle_controller-2] [INFO] [1773486572.124942078] [vehicle_controller]: Target duration reached (3.0s). Status: Speed=25.0 km/h, RPM=1693
+[vehicle_controller-2] [INFO] [1773486572.125839620] [vehicle_controller]: Applying service brake (+500)
+[mock_vehicle-1] [INFO] [1773486572.972266541] [mock_aurora_vehicle]: Received control: gas_brake=500, steering=0, estop=False
+[mock_vehicle-1] [INFO] [1773486573.842411374] [mock_aurora_vehicle]: 🔋 Mock BMS: SOC=84.9% | 12V=13.1V
+[vehicle_controller-2] [INFO] [1773486573.842713645] [vehicle_controller]: BMS Update: Battery at 84.9%
+[mock_vehicle-1] [INFO] [1773486573.972849330] [mock_aurora_vehicle]: Received control: gas_brake=500, steering=0, estop=False
+[vehicle_controller-2] [INFO] [1773486574.125502537] [vehicle_controller]: Mission sequence finalized. Initiating secure shutdown.
+[vehicle_controller-2] [INFO] [1773486574.126874049] [vehicle_controller]: Vehicle is secured. Shutdown sequence finished.
+[mock_vehicle-1] [INFO] [1773486574.126983058] [mock_aurora_vehicle]: 🅿️  Handbrake engaged
+[mock_vehicle-1] [INFO] [1773486574.128154765] [mock_aurora_vehicle]: 🔴 Engine off
 
 ==============================
 Summary:
