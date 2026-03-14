@@ -33,16 +33,16 @@ class VehicleController(Node):
         self.bms_log_counter = 0 # counter to reduce BMS log spam
         self.emergency_triggered = False
 
-        # 1. Async CAN receiver loop
+        # Async CAN receiver loop
         self.timer_receive = self.create_timer(0.01, self.can_receive_callback)
 
-        # 2. Heartbeat publisher (assigned to variable for cleanup)
+        # Heartbeat publisher (assigned to variable for cleanup)
         self.timer_heartbeat = self.create_timer(0.05, self.publish_heartbeat)
 
-        # 3. Startup Sequence Retry (1Hz)
+        # Startup Sequence Retry (1Hz)
         self.timer_startup = self.create_timer(1.0, self.startup_sequence_retry)
 
-        # 4. Mission timers handles (initialized as None)
+        # Mission timers handles (initialized as None)
         self.timer_drive = None
         self.timer_brake = None
         self.timer_shutdown = None

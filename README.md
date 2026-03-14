@@ -39,13 +39,8 @@ sudo ip link set up vcan0
 ## 2. Build
 From the workspace root:
 ```bash
-# Navigate to workspace root
 cd ~/ros2_ws
-
-# Build the package
 colcon build --packages-select aurora_driver
-
-# Source the environment
 source install/setup.bash
 ```
 
@@ -59,15 +54,15 @@ ros2 launch aurora_driver aurora_driver.launch.py drive_duration_sec:=3.0 drive_
 ```
 
 ## Implemented Features
-* Startup retry loop until valid engine RPM and released handbrake are detected
-* 20 Hz heartbeat publishing over CAN
-* Configurable throttle and drive duration through ROS 2 parameters
-* Parsing of:
-    * vehicle speed
-    * engine RPM
-    * battery SOC
-* Controlled braking and shutdown sequence
-* Timer cleanup and CAN bus shutdown during exit
+- Startup retry loop until valid engine RPM and released handbrake are detected
+- 20 Hz heartbeat publishing over CAN
+- Configurable throttle and drive duration through ROS 2 parameters
+- Parsing of:
+    - vehicle speed
+    - engine RPM
+    - battery SOC
+- Controlled braking and shutdown sequence
+- Timer cleanup and CAN bus shutdown during exit
 
 ## Mission Sequence
 1. Release handbrake

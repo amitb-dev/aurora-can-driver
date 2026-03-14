@@ -1,9 +1,5 @@
 """
-TEMPORARY MOCK FILE 
-This module was created manually to satisfy dependencies for the 'mock_aurora_vehicle_node.py' 
-as the original 'canbridge' package was missing from the initial assignment files.
-Constants and IDs are mapped based on the provided PDF protocol documentation.
-To be replaced with the official package upon receipt.
+Minimal CAN message definitions used by the Aurora mock node and controller.
 """
 
 from enum import Enum
@@ -40,5 +36,4 @@ class AuroraGear(Enum):
     NEUTRAL = 0x03
 
 class AuroraMessageHandler:
-    def __init__(self):
-        pass
+    pass
